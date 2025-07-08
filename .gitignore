@@ -1,0 +1,13 @@
+/pci_driver/.Module.symvers.cmd
+/pci_driver/.modules.order.cmd
+/pci_driver/.pci_dr_rtk8168.ko.cmd
+/pci_driver/.pci_dr_rtk8168.mod.cmd
+/pci_driver/.pci_dr_rtk8168.mod.o.cmd
+/pci_driver/.pci_dr_rtk8168.o.cmd
+/pci_driver/Module.symvers
+/pci_driver/modules.order
+/pci_driver/pci_dr_rtk8168.ko
+/pci_driver/pci_dr_rtk8168.mod
+/pci_driver/pci_dr_rtk8168.mod.c
+/pci_driver/pci_dr_rtk8168.mod.o
+/pci_driver/pci_dr_rtk8168.o
