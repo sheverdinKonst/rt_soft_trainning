@@ -20,7 +20,7 @@ int main()
 	}
 	printf("open /dev/foo sucsesful  %d\n", fd);
 	
-	int buffer_flag;
+	int buffer_flag = 77;
 	int res_read = 0;
 	/*printf("------------------ READ --------------------\n");
 	
@@ -34,7 +34,8 @@ int main()
 */
 
 	printf("------------------ WRITE --------------------\n");
-	ioctl(fd, IOC_GET, &buffer_flag);
+	int ioxtl_res = ioctl(fd, IOC_GET, &buffer_flag);
+    printf("ioxtl_res = %d\n", ioxtl_res);
 	printf(">>>>>>>> buffer_flag = %d\n ", buffer_flag);
 
 	memcpy(buf_wr, "test read from sym device", 100);
@@ -44,7 +45,8 @@ int main()
 	printf("res_wr = %d\n", res_wr);
 
 	printf("------------------ READ --------------------\n");
-	ioctl(fd, IOC_GET, &buffer_flag);
+    ioxtl_res = ioctl(fd, IOC_GET, &buffer_flag);
+    printf("ioxtl_res = %d\n", ioxtl_res);
 	printf(">>>>>>>>  buffer_flag = %d\n ", buffer_flag);
 	res_read = read(fd,buf_read,sizeof(buf_read));
 	printf("read byte 2 = %d\n", res_read);
