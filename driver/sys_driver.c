@@ -2,6 +2,10 @@
 #include <linux/printk.h> /* Needed for pr_info() */ 
 #include <linux/fs.h>
 #include <asm/uaccess.h>
+#include <linux/ioctl.h>
+
+#include "../shared/ioct_driver.h"
+
 
 char global_buff[1000];
 
@@ -40,12 +44,35 @@ static ssize_t device_write(struct file *filp, const char *buffer, size_t length
    return write_byte;
 }
 
+//long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
+long device_ioctl(struct file *filp,  unsigned int cmd, unsigned long arg) 
+{
+    long ret=0;
+    pr_info(">>>>>>> device_ioctl");
+    pr_info("cmd = %d", IOC_GET);
+    pr_info("arg = %ld", arg);
+
+    switch (cmd) 
+    {
+        case IOC_GET: 
+         pr_info("--------------- >IOC_GET");
+         ret = 0;
+         break;
+        //case IOC_SET: 
+        // break;
+        default: //return -EINVAL; // old style
+         return -ENOTTY;
+    }
+    return ret;
+}
+
 const struct file_operations fops = 
 {
    .read = device_read,
    .write = device_write,
    .open = device_open,
-   .release = device_release
+   .release = device_release,
+   .unlocked_ioctl = device_ioctl
 };
 
 unsigned int Major;

@@ -4,6 +4,7 @@
 #include <linux/printk.h> /* Needed for pr_info() */ 
 #include <linux/kernel.h> /* Needed by all modules */ 
 
+
 MODULE_LICENSE("GPL");
 int foo_probe(struct pci_dev *dev, const struct pci_device_id *id);
 void foo_remove(struct pci_dev *dev);
@@ -38,17 +39,17 @@ int foo_probe(struct pci_dev *dev, const struct pci_device_id *id) // Реали
     //port_addr = pci_resource_start(dev,0);
     //major = register_chrdev(0,"MyPCI",&fops);
     //printk(KERN_INFO "Load driver PCI %d\n", major);
-    printk(KERN_INFO "Load driver PCI\n");
+    printk(KERN_DEBUG KBUILD_MODNAME "Load driver PCI\n");
     return 0;
 }
 
 void foo_remove(struct pci_dev *dev)
 {
-    printk(KERN_INFO "UN_Load driver PCI\n");
+    printk(KERN_INFO KBUILD_MODNAME "UN_Load driver PCI\n");
     //unregister_chrdev(major,"MyPCI");
 }
 
-int init_module (void) 
+int init_module(void) 
 {
     return pci_register_driver(&rtl8168_pci_driver);
 }
