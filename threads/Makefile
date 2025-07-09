@@ -1,4 +1,4 @@
-obj-m += thread_driver.c.o
+obj-m += thread_driver.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules

@@ -7,7 +7,7 @@
 #include <linux/device.h> // Добавляем этот заголовочный файл
 #include <linux/version.h>
 #include <linux/kthread.h>
-
+#include <linux/delay.h>
 #include "../shared/ioct_driver.h"
 
 char global_buff[1000];
@@ -59,22 +59,23 @@ static ssize_t device_write(struct file *filp, const char *buffer, size_t length
 //long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
 long device_ioctl(struct file *filp,  unsigned int cmd, unsigned long arg) 
 {
-    long ret=0;
+    long ret = 0;
     pr_info(">>>>>>> device_ioctl");
     pr_info("cmd = %d", IOC_GET);
-
+    int *pp;
     switch (cmd) 
     {
         case IOC_GET: 
          pr_info("--------------- >IOC_GET");
-         long res_copy = copy_to_user(arg, &val, sizeof(val));
-         pr_info("res_copy = %ld\n", res_copy);
-         pr_info("flag = %d\n", flag);
-         pr_info("arg = %ld", arg);
+         pp = (int*) arg;
+         long res_copy = copy_to_user(pp, &val, sizeof(int));
+         printk("Val = %d\n", val);
+        
          ret = 0;
          break;
         //case IOC_SET: 
-        // break;
+
+        //    break;
         default: //return -EINVAL; // old style
          return -ENOTTY;
     }
@@ -98,8 +99,8 @@ int thread(void *data)
 {
     while(1) 
     {
-        printk("Val = %d\n", val);
-        msleep(100);
+        val ++;
+        msleep(1000);
         if (kthread_should_stop())
         break;
     }
@@ -137,6 +138,13 @@ int init_module(void)
     foo_class = class_create("foo_class");
 #endif
 
+    ts = kthread_run(thread, NULL, "foo kthread");
+    if (ts == NULL)
+    {
+        printk("kthread_run failed\n");
+        return -1;
+    }
+
     if(IS_ERR(foo_class))
     {
         goto r_class; // Cannot create the struct class for device
@@ -151,9 +159,6 @@ int init_module(void)
         class_destroy(foo_class);
     r_class:
         unregister_chrdev_region(dev,1);
-
-    ts = kthread_run(thread, NULL, "foo kthread");
-    printk("ts = %d\n", ts);
     return -1;
 }
 

@@ -25,3 +25,10 @@
 /driver/sys_driver.mod.o
 /driver/sys_driver.o
 /user_app/build/user_app
+/threads/
+/threads/.Module.symvers.cmd
+/threads/.modules.order.cmd
+/threads/.thread_driver.ko.cmd
+/threads/.thread_driver.mod.cmd
+/threads/.thread_driver.mod.o.cmd
+/threads/.thread_driver.o.cmd
