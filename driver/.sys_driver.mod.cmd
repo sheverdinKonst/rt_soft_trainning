@@ -1,1 +1,0 @@
-cmd_/work/2025_07/konstantin/src/rt_soft_trainning/driver/sys_driver.mod := { echo  /work/2025_07/konstantin/src/rt_soft_trainning/driver/sys_driver.o;  echo; } > /work/2025_07/konstantin/src/rt_soft_trainning/driver/sys_driver.mod

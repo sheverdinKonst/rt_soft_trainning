@@ -1,1 +1,0 @@
-cmd_/work/2025_07/konstantin/src/rt_soft_trainning/driver/Module.symvers := sed 's/ko$$/o/' /work/2025_07/konstantin/src/rt_soft_trainning/driver/modules.order | scripts/mod/modpost -m    -o /work/2025_07/konstantin/src/rt_soft_trainning/driver/Module.symvers -e -i Module.symvers   -T -

@@ -1,1 +1,0 @@
-cmd_/work/2025_07/konstantin/src/rt_soft_trainning/driver/modules.order := {   echo /work/2025_07/konstantin/src/rt_soft_trainning/driver/sys_driver.ko; :; } | awk '!x[$$0]++' - > /work/2025_07/konstantin/src/rt_soft_trainning/driver/modules.order
