@@ -11,3 +11,16 @@
 /pci_driver/pci_dr_rtk8168.mod.c
 /pci_driver/pci_dr_rtk8168.mod.o
 /pci_driver/pci_dr_rtk8168.o
+/driver/.Module.symvers.cmd
+/driver/.modules.order.cmd
+/driver/.sys_driver.mod.cmd
+/driver/.sys_driver.ko.cmd
+/driver/.sys_driver.mod.o.cmd
+/driver/.sys_driver.o.cmd
+/driver/Module.symvers
+/driver/modules.order
+/driver/sys_driver.ko
+/driver/sys_driver.mod
+/driver/sys_driver.mod.c
+/driver/sys_driver.mod.o
+/driver/sys_driver.o
