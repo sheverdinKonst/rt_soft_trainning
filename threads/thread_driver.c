@@ -73,9 +73,11 @@ long device_ioctl(struct file *filp,  unsigned int cmd, unsigned long arg)
         
          ret = 0;
          break;
-        //case IOC_SET: 
+        case IOC_SET: 
+            pr_info("--------------- >IOC_SET");
+            
+        break;
 
-        //    break;
         default: //return -EINVAL; // old style
          return -ENOTTY;
     }

@@ -81,6 +81,8 @@ const struct file_operations fops =
    //.unlocked_ioctl = device_ioctl
 };
 
+
+void __iomem *ioaddr = NULL;
 int foo_probe(struct pci_dev *pdev, const struct pci_device_id *id) // Реализация probe
 {
     
@@ -100,85 +102,119 @@ int foo_probe(struct pci_dev *pdev, const struct pci_device_id *id) // Реал�
     my_cdev->ops = &fops;
     my_cdev->owner = THIS_MODULE;
 
+    //pr_info(" >>>>>>>>>> 1\n");
     int res = cdev_add(my_cdev, dev_sys, 1);
     if (res < 0)
     {
+        pr_info("cdev_add = %d\n", res);
         unregister_chrdev_region(dev_sys, 1);
         return res;
     }
-
+    //pr_info(" >>>>>>>>>> 1\n");
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 0, 0)
     foo_class = class_create(THIS_MODULE, "foo_class");
 #else
     foo_class = class_create("foo_class");
 #endif
 
+    //pr_info(" >>>>>>>>>> 3\n");
     if(IS_ERR(foo_class))
     {
         goto r_class; // Cannot create the struct class for device
     }
-
+    pr_info(" >>>>>>>>>> 4\n");
     if(IS_ERR(device_create(foo_class,NULL,dev_sys,NULL,"foo")))
-    { // Creating device
+    {
         goto r_device; // Cannot create the Device
     }
-    return 0; // Kernel Module Inserted Successfully
+    
     r_device:
         class_destroy(foo_class);
     r_class:
         unregister_chrdev_region(dev_sys,1);
     
-    
-    int port_addr = pci_resource_start(pdev, 2);
-    major_pci = register_chrdev(0, "rtk8168", &fops);
-    printk(KERN_INFO KBUILD_MODNAME"Load driver PCI: rtk8168 %d\n", major_pci);
-
-    // Запрашиваем ресурсы PCI
-    int ret = pci_request_regions(pdev, "rtk_8168");
-    if (ret) {
-        pr_err("Failed to request PCI regions\n");
-        pci_disable_device(pdev);
-        return ret;
-    }
      
-    void __iomem *ioaddr = NULL;  
+    int pci_addr = pci_resource_start(pdev, 2);
+    int pci_len = pci_resource_len(pdev, 2);
+    
+    if ((pci_addr == 0 ) || (pci_addr == 0))
+    {   
+        printk ("!!! failed\n"); 
+        return -1;
+    }
+    else
+        printk ("%u...OK.\n",(int)pci_addr);
 
-    // Получаем базовый адрес памяти (обычно BAR2 для сетевых карт)
-    ioaddr = pci_iomap(pdev, 2, 0);
-    if (!ioaddr) 
+    if (pci_resource_flags(pdev, 0)&IORESOURCE_MEM)
+        printk ("pci_resource_flags OK\n");
+    else 
     {
-        pr_err("Cannot map device registers\n");
-        pci_release_regions(pdev);
-        pci_disable_device(pdev);
-        return -ENOMEM;
+        printk ("pci_resource_start failed \n"); return -1;
     }
 
-    char mac_addr[6];
+    //int ret = pci_request_regions(pdev, "rtk_8168");
+    //pr_info("pci_request_regions = %d\n", ret);
+    //if (ret) {
+    //    pr_err("Failed to request PCI regions\n");
+    //   pci_disable_device(pdev);
+    //    return ret;
+    //}
+
+    //void __iomem *ioaddr = NULL;
+    //ioaddr = pci_iomap(pdev, 2, 0);
+    //if (!ioaddr) 
+    //{
+    //    pr_info("Cannot map device registers\n");
+    //    pci_release_regions(pdev);
+    //    pci_disable_device(pdev);
+    //    return -ENOMEM;
+    //}
+
+    printk ("Get virtual BAR0...");
+    
+    ioaddr = ioremap(pci_addr, pci_len);
+    if (ioaddr == 0) 
+    {
+        printk ("ioremap failed\n"); 
+        return -1;
+    }
+    else 
+        printk ("%u...OK.\n",(int)ioaddr);
+
+    printk ("Request region BAR0...\t\t");
+    if (request_mem_region(pci_addr , pci_len, "rtk_8168"))
+        printk ("request_mem_region OK\n");
+    else 
+    {
+        printk ("request_mem_region failed\n");
+         return -1;
+    }
+
+    unsigned char mac_addr[6];
     int i = 0;
-    // Читаем MAC-адрес (обычно находится по смещению 0x00)
-    for (i = 0; i < 6; i++) {
+    for (i = 0; i < 6; i++) 
+    {
         mac_addr[i] = ioread8(ioaddr + i);
     }
 
-    // Печатаем MAC-адрес
     pr_info("MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
-           mac_addr[0], mac_addr[1], mac_addr[2],
-           mac_addr[3], mac_addr[4], mac_addr[5]);
+           (unsigned int) mac_addr[0],  (unsigned int) mac_addr[1],  (unsigned int) mac_addr[2],
+            (unsigned int) mac_addr[3],  (unsigned int) mac_addr[4],  (unsigned int) mac_addr[5]);
 
     return 0;
 }
 
 void foo_remove(struct pci_dev *pdev)
 {
+    iounmap(ioaddr);
     device_destroy(foo_class, dev_sys);
     class_destroy(foo_class);
     cdev_del(my_cdev);
     unregister_chrdev_region(dev_sys, 1);
     pr_info("Kernel Module Removed Successfully...\n");
-    
-    printk(KERN_INFO KBUILD_MODNAME "UN_Load driver PCI\n");
+
     unregister_chrdev(major_pci,"rtk8168");
-    printk(KERN_INFO KBUILD_MODNAME "UN_Load driver PCI\n");
+    printk(KERN_INFO KBUILD_MODNAME " >> UN_Load driver PCI\n");
 }
 
 int init_module(void) 
