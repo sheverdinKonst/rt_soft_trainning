@@ -1,0 +1,1 @@
+cmd_/work/2025_07/konstantin/src/rt_soft_trainning/driver/sys_driver.ko := ld -r -m elf_x86_64 -z noexecstack --build-id=sha1  -T arch/x86/module.lds -o /work/2025_07/konstantin/src/rt_soft_trainning/driver/sys_driver.ko /work/2025_07/konstantin/src/rt_soft_trainning/driver/sys_driver.o /work/2025_07/konstantin/src/rt_soft_trainning/driver/sys_driver.mod.o;  true
