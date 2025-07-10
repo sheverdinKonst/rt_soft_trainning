@@ -1,7 +1,6 @@
-obj-m += pci_dr_rtk8168.o
+obj-m += hello.o
 
 KDIR := /work/2025_07/linux-6.1.80
-
 all:
 	make -C $(KDIR) M=$(PWD) modules
 clean:
