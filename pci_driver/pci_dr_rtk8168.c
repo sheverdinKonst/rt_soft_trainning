@@ -24,6 +24,8 @@ struct cdev *my_cdev;
 unsigned int major_pci;
 unsigned int major_sys;
 
+unsigned int irq = 0;
+
 int foo_probe(struct pci_dev *dev, const struct pci_device_id *id);
 void foo_remove(struct pci_dev *dev);
 
@@ -36,6 +38,12 @@ MODULE_DEVICE_TABLE(pci, cp_pci_tbl);
 
 struct net_device* net_dev;
 
+irqreturn_t my_isr(int irq, void *dev_id)
+{
+    pr_info("IRQ for Net device\n");
+    return IRQ_HANDLED;
+}
+
 int demo_nic_init(struct net_device *dev)
 {
     pr_info("demo_nic initialized\n");
@@ -46,19 +54,32 @@ int demo_nic_open(struct net_device *dev)
 {
     pr_info("demo_nic open\n");
     netif_start_queue(dev);
+
+    if (!dev) 
+    {   
+        pr_info("return -ENODEV\n");
+        return -ENODEV;
+    }
+        
+    irq = dev->irq;
+
+    pr_info("irq = %d\n", irq);
+
+    if (request_irq(irq, my_isr, IRQF_SHARED, "eth_0", dev))
+    {
+        pr_info("return -EBUSY\n");
+        //return -EBUSY;
+    }
     return 0;
 }
 
 int demo_nic_release(struct net_device *dev)
 {
     pr_info("demo_nic release\n");
+    free_irq(irq, (void*) dev);
     netif_stop_queue(dev);
     return 0;
 }
-
-#include <linux/ctype.h>  // Добавляем для isprint()
-
-// ...
 
 int demo_nic_xmit(struct sk_buff *skb, struct net_device *dev) 
 {
@@ -84,76 +105,77 @@ int demo_nic_xmit(struct sk_buff *skb, struct net_device *dev)
            eth->h_source, eth->h_dest, ntohs(eth->h_proto));
     
     // IP header (if available)
-    if (ntohs(eth->h_proto) == ETH_P_IP) {
-        iph = (struct iphdr *)skb_network_header(skb);
-        pr_info("IP: src: %pI4 dst: %pI4 proto: %d TTL: %d\n", 
-               &iph->saddr, &iph->daddr, iph->protocol, iph->ttl);
-        
-        // TCP header
-        if (iph->protocol == IPPROTO_TCP) {
-            tcph = (struct tcphdr *)skb_transport_header(skb);
-            pr_info("TCP: sport: %d dport: %d seq: %u ack: %u\n", 
-                   ntohs(tcph->source), ntohs(tcph->dest),
-                   ntohl(tcph->seq), ntohl(tcph->ack_seq));
-            
-            // Calculate payload
-            payload = (unsigned char *)(tcph) + (tcph->doff * 4);
-            payload_len = ntohs(iph->tot_len) - (iph->ihl * 4) - (tcph->doff * 4);
-        }
-        // UDP header
-        else if (iph->protocol == IPPROTO_UDP) {
-            udph = (struct udphdr *)skb_transport_header(skb);
-            pr_info("UDP: sport: %d dport: %d len: %d\n", 
-                   ntohs(udph->source), ntohs(udph->dest), ntohs(udph->len));
-            
-            // Calculate payload
-            payload = (unsigned char *)(udph) + sizeof(struct udphdr);
-            payload_len = ntohs(udph->len) - sizeof(struct udphdr);
-        }
-        // Other IP protocols
-        else {
-            payload = (unsigned char *)skb_transport_header(skb);
-            payload_len = ntohs(iph->tot_len) - (iph->ihl * 4);
-        }
-        
-        // Print payload (first 64 bytes)
-        if (payload_len > 0) {
-            pr_info("Payload (%d bytes):\n", payload_len);
-            for (i = 0; i < min(payload_len, 64); i++) {
-                if (i % 16 == 0) pr_cont("\n%04x: ", i);
-                pr_cont("%02x ", payload[i]);
-            }
-            pr_cont("\n");
-            
-            // Print as ASCII (if printable)
-            pr_info("ASCII:\n");
-            for (i = 0; i < min(payload_len, 64); i++) {
-                if (i % 16 == 0) pr_cont("\n%04x: ", i);
-                pr_cont("%c ", isprint(payload[i]) ? payload[i] : '.');
-            }
-            pr_cont("\n");
-        }
-    }
-    // Non-IP packet
-    else {
-        payload = skb->data + sizeof(struct ethhdr);
-        payload_len = skb->len - sizeof(struct ethhdr);
-        
-        if (payload_len > 0) {
-            pr_info("Non-IP payload (%d bytes):\n", payload_len);
-            for (i = 0; i < min(payload_len, 64); i++) {
-                if (i % 16 == 0) pr_cont("\n%04x: ", i);
-                pr_cont("%02x ", payload[i]);
-            }
-            pr_cont("\n");
-        }
-    }
+    //if (ntohs(eth->h_proto) == ETH_P_IP) {
+    //    iph = (struct iphdr *)skb_network_header(skb);
+    //    pr_info("IP: src: %pI4 dst: %pI4 proto: %d TTL: %d\n",
+    //           &iph->saddr, &iph->daddr, iph->protocol, iph->ttl);
+    //
+    //    // TCP header
+    //    if (iph->protocol == IPPROTO_TCP) {
+    //        tcph = (struct tcphdr *)skb_transport_header(skb);
+    //        pr_info("TCP: sport: %d dport: %d seq: %u ack: %u\n",
+    //               ntohs(tcph->source), ntohs(tcph->dest),
+    //               ntohl(tcph->seq), ntohl(tcph->ack_seq));
+    //
+    //        // Calculate payload
+    //        payload = (unsigned char *)(tcph) + (tcph->doff * 4);
+    //        payload_len = ntohs(iph->tot_len) - (iph->ihl * 4) - (tcph->doff * 4);
+    //    }
+    //    // UDP header
+    //    else if (iph->protocol == IPPROTO_UDP) {
+    //        udph = (struct udphdr *)skb_transport_header(skb);
+    //        pr_info("UDP: sport: %d dport: %d len: %d\n",
+    //               ntohs(udph->source), ntohs(udph->dest), ntohs(udph->len));
+    //
+    //        // Calculate payload
+    //        payload = (unsigned char *)(udph) + sizeof(struct udphdr);
+    //        payload_len = ntohs(udph->len) - sizeof(struct udphdr);
+    //    }
+    //    // Other IP protocols
+    //    else {
+    //        payload = (unsigned char *)skb_transport_header(skb);
+    //        payload_len = ntohs(iph->tot_len) - (iph->ihl * 4);
+    //    }
+    //
+    //    // Print payload (first 64 bytes)
+    //    if (payload_len > 0) {
+    //        pr_info("Payload (%d bytes):\n", payload_len);
+    //        for (i = 0; i < min(payload_len, 64); i++) {
+    //            if (i % 16 == 0) pr_cont("\n%04x: ", i);
+    //            pr_cont("%02x ", payload[i]);
+    //        }
+    //        pr_cont("\n");
+    //
+    //        // Print as ASCII (if printable)
+    //        pr_info("ASCII:\n");
+    //        for (i = 0; i < min(payload_len, 64); i++) {
+    //            if (i % 16 == 0) pr_cont("\n%04x: ", i);
+    //            pr_cont("%c ", isprint(payload[i]) ? payload[i] : '.');
+    //        }
+    //        pr_cont("\n");
+    //    }
+    //}
+    //// Non-IP packet
+    //else {
+    //    payload = skb->data + sizeof(struct ethhdr);
+    //    payload_len = skb->len - sizeof(struct ethhdr);
+    //
+    //    if (payload_len > 0) {
+    //        pr_info("Non-IP payload (%d bytes):\n", payload_len);
+    //        for (i = 0; i < min(payload_len, 64); i++) {
+    //            if (i % 16 == 0) pr_cont("\n%04x: ", i);
+    //            pr_cont("%02x ", payload[i]);
+    //        }
+    //        pr_cont("\n");
+    //    }
+    //}
     
     dev_kfree_skb(skb);
     return NETDEV_TX_OK;
 }
 
-const struct net_device_ops demo_nic_netdev_ops = {
+const struct net_device_ops demo_nic_netdev_ops = 
+{
     .ndo_init = demo_nic_init,
     .ndo_open = demo_nic_open,
     .ndo_stop = demo_nic_release,
@@ -225,6 +247,8 @@ int foo_probe(struct pci_dev *pdev, const struct pci_device_id *id)
     printk("NET DRIVER INIT\n");
 
     net_dev = alloc_etherdev(0);
+    net_dev->irq = pdev->irq;
+    pr_info("net_dev->irq = %d\n", net_dev->irq);
     if (!net_dev) {
         pr_info("Failed to allocate net device\n");
         release_mem_region(pci_addr, pci_len);

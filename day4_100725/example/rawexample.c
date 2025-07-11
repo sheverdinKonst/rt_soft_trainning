@@ -42,6 +42,7 @@ int main(int argc, char **argv) {
     close(s);
     return -1;
   }
+  
   ifindex = buffer.ifr_ifindex;
  
   unsigned char source[ETH_ALEN];
@@ -50,6 +51,7 @@ int main(int argc, char **argv) {
     close(s);
     return -1;
   }
+
   memcpy((void*)source, (void*)(buffer.ifr_hwaddr.sa_data),
          ETH_ALEN);
  
