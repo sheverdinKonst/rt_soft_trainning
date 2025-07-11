@@ -1,0 +1,9 @@
+1. https://github.com/theja0473/My-Lib-Books-1/blob/master/Essential%20Linux%20Device%20Drivers%5B2008%2C851p%5D.pdf
+
+2. https://github.com/theja0473/My-Lib-Books-1/blob/master/Essential%20Linux%20Device%20Drivers%5B2008%2C851p%5D.pdf
+
+3. https://lwn.net/Kernel/LDD3/
+
+4. Расширения ядра Linux: драйверы и модули | Цирюлик Олег
+
+5. https://bootlin.com/doc/training/linux-kernel/linux-kernel-slides.pdf
