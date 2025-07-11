@@ -33,3 +33,4 @@
 /threads/.thread_driver.mod.o.cmd
 /threads/.thread_driver.o.cmd
 /.vscode/settings.json
+/pci_driver/.pci_dr_rtk8168.o.d
