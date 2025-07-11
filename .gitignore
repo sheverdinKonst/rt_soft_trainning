@@ -32,3 +32,4 @@
 /threads/.thread_driver.mod.cmd
 /threads/.thread_driver.mod.o.cmd
 /threads/.thread_driver.o.cmd
+/.vscode/settings.json

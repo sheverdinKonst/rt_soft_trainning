@@ -85,9 +85,7 @@ const struct file_operations fops =
 void __iomem *ioaddr = NULL;
 int foo_probe(struct pci_dev *pdev, const struct pci_device_id *id) // Реализация probe
 {
-    
     pr_info("***** 1 ************ init_module foo \n");
-
     memset(global_buff, 0, 1000);
     //init_waitqueue_head(&wq);
     if((alloc_chrdev_region(&dev_sys, 0, 1, "foo")) < 0 )
@@ -110,30 +108,24 @@ int foo_probe(struct pci_dev *pdev, const struct pci_device_id *id) // Реал�
         unregister_chrdev_region(dev_sys, 1);
         return res;
     }
-    //pr_info(" >>>>>>>>>> 1\n");
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 0, 0)
     foo_class = class_create(THIS_MODULE, "foo_class");
 #else
     foo_class = class_create("foo_class");
 #endif
-
-    //pr_info(" >>>>>>>>>> 3\n");
     if(IS_ERR(foo_class))
     {
         goto r_class; // Cannot create the struct class for device
     }
-    pr_info(" >>>>>>>>>> 4\n");
     if(IS_ERR(device_create(foo_class,NULL,dev_sys,NULL,"foo")))
     {
         goto r_device; // Cannot create the Device
     }
-    
     r_device:
         class_destroy(foo_class);
     r_class:
         unregister_chrdev_region(dev_sys,1);
-    
-     
+
     int pci_addr = pci_resource_start(pdev, 2);
     int pci_len = pci_resource_len(pdev, 2);
     
@@ -152,25 +144,7 @@ int foo_probe(struct pci_dev *pdev, const struct pci_device_id *id) // Реал�
         printk ("pci_resource_start failed \n"); return -1;
     }
 
-    //int ret = pci_request_regions(pdev, "rtk_8168");
-    //pr_info("pci_request_regions = %d\n", ret);
-    //if (ret) {
-    //    pr_err("Failed to request PCI regions\n");
-    //   pci_disable_device(pdev);
-    //    return ret;
-    //}
-
-    //void __iomem *ioaddr = NULL;
-    //ioaddr = pci_iomap(pdev, 2, 0);
-    //if (!ioaddr) 
-    //{
-    //    pr_info("Cannot map device registers\n");
-    //    pci_release_regions(pdev);
-    //    pci_disable_device(pdev);
-    //    return -ENOMEM;
-    //}
-
-    printk ("Get virtual BAR0...");
+    printk ("Get virtual BAR 2...");
     
     ioaddr = ioremap(pci_addr, pci_len);
     if (ioaddr == 0) 
@@ -181,7 +155,7 @@ int foo_probe(struct pci_dev *pdev, const struct pci_device_id *id) // Реал�
     else 
         printk ("%u...OK.\n",(int)ioaddr);
 
-    printk ("Request region BAR0...\t\t");
+    printk ("Request region BAR 2...\t\t");
     if (request_mem_region(pci_addr , pci_len, "rtk_8168"))
         printk ("request_mem_region OK\n");
     else 
@@ -200,6 +174,8 @@ int foo_probe(struct pci_dev *pdev, const struct pci_device_id *id) // Реал�
     pr_info("MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
            (unsigned int) mac_addr[0],  (unsigned int) mac_addr[1],  (unsigned int) mac_addr[2],
             (unsigned int) mac_addr[3],  (unsigned int) mac_addr[4],  (unsigned int) mac_addr[5]);
+
+
 
     return 0;
 }
