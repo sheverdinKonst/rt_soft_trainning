@@ -49,3 +49,16 @@
 /day4/modules.order
 /pci_driver/.pci_dr_rtk8168.o.d
 /.vscode/settings.json
+/serial/.hw_serial.ko.cmd
+/serial/.hw_serial.mod.cmd
+/serial/.hw_serial.mod.o.cmd
+/serial/.hw_serial.o.cmd
+/serial/.Module.symvers.cmd
+/serial/.modules.order.cmd
+/serial/hw_serial.ko
+/serial/hw_serial.mod
+/serial/hw_serial.mod.c
+/serial/hw_serial.mod.o
+/serial/hw_serial.o
+/serial/Module.symvers
+/serial/modules.order
